@@ -29,16 +29,17 @@ uint32_t I(uint32_t x, uint32_t y, uint32_t z) {
 	return  y ^ (x | ~z);
 }
 
+// todo debug and fix
 char * md5(char *message) {
 	// https://datatracker.ietf.org/doc/html/rfc1321?__cf_chl_tk=L50_UpHKfr3jlIFNICbpDp6joIWTte039XXpj9GiGxA-1779644585-1.0.1.1-P1XLy9BecVx1Y9E4DPPy.xjbM5_lpuNoDjR65df65DY
 	size_t length = strlen(message);
-	size_t bits = length * sizeof(char) * 8;
+	size_t bits = length * 8;
 	size_t newLength = bits + 1;
 
-	while (newLength % 512 != 448) {
+	while (newLength % 64 != 56) {
 		newLength++;
 	}
-	newLength += 64;
+	newLength += 8;
 
 	size_t newLengthbytes = newLength / 8;
 
@@ -49,8 +50,9 @@ char * md5(char *message) {
 
 	memcpy(buffer, message, length);
 
-	buffer[length - 1] = 0x80;
-	buffer[newLengthbytes - 1] = length * 8;
+	buffer[length] = 0x80;
+	uint64_t bitLength = length * 8;
+	memcpy(buffer + newLengthbytes - 8, &bitLength, 8);
 
 	uint32_t A0 = 0x67452301;
 	uint32_t B0 = 0xefcdab89;
@@ -218,15 +220,12 @@ char * md5(char *message) {
 
 			uint32_t temp = D;
 
+			uint32_t sum = A + F_value + K[i] + M[g];
+
 			D = C;
 			C = B;
-
-			uint32_t newB = B + RotateLeft(
-					A + F_value + K[i] + M[g],
-					S[i]);
-
+			B = B + RotateLeft(sum, S[i]);
 			A = temp;
-			B = newB;
 		}
 
 		A0 += A;
