@@ -29,31 +29,49 @@ uint32_t I(uint32_t x, uint32_t y, uint32_t z) {
 	return  y ^ (x | ~z);
 }
 
-// todo debug and fix
+uint64_t toBigEndian(uint64_t value)
+{
+	return (value & 0x00000000000000FFULL) << 56 |
+		   (value & 0x000000000000FF00ULL) << 40 |
+		   (value & 0x0000000000FF0000ULL) << 24 |
+		   (value & 0x00000000FF000000ULL) << 8  |
+		   (value & 0x000000FF00000000ULL) >> 8  |
+		   (value & 0x0000FF0000000000ULL) >> 24 |
+		   (value & 0x00FF000000000000ULL) >> 40 |
+		   (value & 0xFF00000000000000ULL) >> 56;
+}
+
 char * md5(char *message) {
 	// https://datatracker.ietf.org/doc/html/rfc1321?__cf_chl_tk=L50_UpHKfr3jlIFNICbpDp6joIWTte039XXpj9GiGxA-1779644585-1.0.1.1-P1XLy9BecVx1Y9E4DPPy.xjbM5_lpuNoDjR65df65DY
 	size_t length = strlen(message);
 	size_t bits = length * 8;
-	size_t newLength = bits + 1;
+	size_t newLength = bits;
 
-	while (newLength % 64 != 56) {
+	if (length == 0) {
+		newLength = 512;
+	}
+
+	while (newLength % 512 != 0) {
 		newLength++;
 	}
-	newLength += 8;
 
-	size_t newLengthbytes = newLength / 8;
+	size_t elements = newLength / 32;
 
-	uint8_t *buffer = calloc(newLengthbytes, 1);
+	uint32_t *buffer = calloc(elements, sizeof(uint32_t));
 	if (!buffer) {
 		return NULL;
 	}
 
 	memcpy(buffer, message, length);
 
-	buffer[length] = 0x80;
+	((uint8_t*)buffer)[length] = 0x80;
 	uint64_t bitLength = length * 8;
-	memcpy(buffer + newLengthbytes - 8, &bitLength, 8);
 
+	memcpy(
+		(uint8_t*)buffer + (elements * sizeof(uint32_t)) - 8,
+		&bitLength,
+		8
+	);
 	uint32_t A0 = 0x67452301;
 	uint32_t B0 = 0xefcdab89;
 	uint32_t C0 = 0x98badcfe;
@@ -193,13 +211,18 @@ char * md5(char *message) {
 		21
 	};
 
-	for (size_t offset = 0; offset < newLengthbytes; offset += 64) {
+	// todo debug and fix
+	for (size_t offset = 0; offset < elements; offset += 16) {
 		uint32_t A = A0;
 		uint32_t B = B0;
 		uint32_t C = C0;
 		uint32_t D = D0;
 
-		uint32_t *M = (uint32_t *)(buffer + offset);
+		uint32_t *M = buffer + offset;
+
+		for (int i = 0; i < 16; i++) {
+			printf("M[%d] = %08x\n", i, M[i]);
+		}
 
 		for (int i = 0; i < 64; i++) {
 			uint32_t F_value, g;
@@ -218,6 +241,11 @@ char * md5(char *message) {
 				g = (7 * i) % 16;
 			}
 
+			printf(
+				"A=%08x B=%08x C=%08x D=%08x F=%08x M=%08x\n",
+				A,B,C,D,F_value,M[g]
+			);
+
 			uint32_t temp = D;
 
 			uint32_t sum = A + F_value + K[i] + M[g];
@@ -226,6 +254,8 @@ char * md5(char *message) {
 			C = B;
 			B = B + RotateLeft(sum, S[i]);
 			A = temp;
+
+			printf("%08x %08x %08x %08x\n", A, B, C, D);
 		}
 
 		A0 += A;
