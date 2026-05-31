@@ -14,48 +14,28 @@ uint32_t RotateLeft(uint32_t x, uint32_t n) {
 }
 
 uint32_t F(uint32_t x, uint32_t y, uint32_t z) {
-	return  (x & y) | (~x & z);
+	return (x & y) | (~x & z);
 }
 
 uint32_t G(uint32_t x, uint32_t y, uint32_t z) {
-	return  (x & z) | (y & ~z);
+	return (x & z) | (y & ~z);
 }
 
 uint32_t H(uint32_t x, uint32_t y, uint32_t z) {
-	return  x ^ y ^ z;
+	return x ^ y ^ z;
 }
 
 uint32_t I(uint32_t x, uint32_t y, uint32_t z) {
-	return  y ^ (x | ~z);
-}
-
-uint64_t toBigEndian(uint64_t value)
-{
-	return (value & 0x00000000000000FFULL) << 56 |
-		   (value & 0x000000000000FF00ULL) << 40 |
-		   (value & 0x0000000000FF0000ULL) << 24 |
-		   (value & 0x00000000FF000000ULL) << 8  |
-		   (value & 0x000000FF00000000ULL) >> 8  |
-		   (value & 0x0000FF0000000000ULL) >> 24 |
-		   (value & 0x00FF000000000000ULL) >> 40 |
-		   (value & 0xFF00000000000000ULL) >> 56;
+	return y ^ (x | ~z);
 }
 
 char * md5(char *message) {
-	// https://datatracker.ietf.org/doc/html/rfc1321?__cf_chl_tk=L50_UpHKfr3jlIFNICbpDp6joIWTte039XXpj9GiGxA-1779644585-1.0.1.1-P1XLy9BecVx1Y9E4DPPy.xjbM5_lpuNoDjR65df65DY
 	size_t length = strlen(message);
-	size_t bits = length * 8;
-	size_t newLength = bits;
+	uint64_t bitLength = length * 8;
 
-	if (length == 0) {
-		newLength = 512;
-	}
+	size_t totalLength = (length + 9 + 63) / 64 * 64;
 
-	while (newLength % 512 != 0) {
-		newLength++;
-	}
-
-	size_t elements = newLength / 32;
+	size_t elements = totalLength / sizeof(uint32_t);
 
 	uint32_t *buffer = calloc(elements, sizeof(uint32_t));
 	if (!buffer) {
@@ -65,7 +45,7 @@ char * md5(char *message) {
 	memcpy(buffer, message, length);
 
 	((uint8_t*)buffer)[length] = 0x80;
-	uint64_t bitLength = length * 8;
+	bitLength = length * 8;
 
 	memcpy(
 		(uint8_t*)buffer + (elements * sizeof(uint32_t)) - 8,
@@ -78,70 +58,70 @@ char * md5(char *message) {
 	uint32_t D0 = 0x10325476;
 
 	uint32_t K[] = {
-		0xD76AA478,
-		0xE8C7B756,
-		0x242070DB,
-		0xC1BDCEEE,
-		0x0F57C0FA,
-		0x4787C62A,
-		0xA8304613,
-		0xFD469501,
-		0x698098D8,
-		0x8B44F7AF,
-		0xFFFF5BB1,
-		0x895CD7BE,
-		0x6B901122,
-		0xFD987193,
-		0xA679438E,
-		0x49B40821,
-		0xF61E2562,
-		0xC040B340,
-		0x265E5A51,
-		0xE9B6C7AA,
-		0xD62F105D,
-		0x02441453,
-		0xD8A1E681,
-		0xE7D3FBC8,
-		0x21E1CDE6,
-		0xC33707D6,
-		0xF4D50D87,
-		0x455A14ED,
-		0xA9E3E905,
-		0xFCEFA3F8,
-		0x676F02D9,
-		0x8D2A4C8A,
-		0xFFFA3942,
-		0x8771F681,
-		0x6D9D6122,
-		0xFDE5380C,
-		0xA4BEEA44,
-		0x4BDECFA9,
-		0xF6BB4B60,
-		0xBEBFBC70,
-		0x289B7EC6,
-		0xEAA127FA,
-		0xD4EF3085,
-		0x04881D05,
-		0xD9D4D039,
-		0xE6DB99E5,
-		0x1FA27CF8,
-		0xC4AC5665,
-		0xF4292244,
-		0x432AFF97,
-		0xAB9423A7,
-		0xFC93A039,
-		0x655B59C3,
-		0x8F0CCC92,
-		0xFFEFF47D,
-		0x85845DD1,
-		0x6FA87E4F,
-		0xFE2CE6E0,
-		0xA3014314,
-		0x4E0811A1,
-		0xF7537E82,
-		0xBD3AF235,
-		0x2AD7D2BB,
-		0xEB86D391
+		0xd76aa478,
+		0xe8c7b756,
+		0x242070db,
+		0xc1bdceee,
+		0xf57c0faf,
+		0x4787c62a,
+		0xa8304613,
+		0xfd469501,
+		0x698098d8,
+		0x8b44f7af,
+		0xffff5bb1,
+		0x895cd7be,
+		0x6b901122,
+		0xfd987193,
+		0xa679438e,
+		0x49b40821,
+		0xf61e2562,
+		0xc040b340,
+		0x265e5a51,
+		0xe9b6c7aa,
+		0xd62f105d,
+		 0x2441453,
+		0xd8a1e681,
+		0xe7d3fbc8,
+		0x21e1cde6,
+		0xc33707d6,
+		0xf4d50d87,
+		0x455a14ed,
+		0xa9e3e905,
+		0xfcefa3f8,
+		0x676f02d9,
+		0x8d2a4c8a,
+		0xfffa3942,
+		0x8771f681,
+		0x6d9d6122,
+		0xfde5380c,
+		0xa4beea44,
+		0x4bdecfa9,
+		0xf6bb4b60,
+		0xbebfbc70,
+		0x289b7ec6,
+		0xeaa127fa,
+		0xd4ef3085,
+		 0x4881d05,
+		0xd9d4d039,
+		0xe6db99e5,
+		0x1fa27cf8,
+		0xc4ac5665,
+		0xf4292244,
+		0x432aff97,
+		0xab9423a7,
+		0xfc93a039,
+		0x655b59c3,
+		0x8f0ccc92,
+		0xffeff47d,
+		0x85845dd1,
+		0x6fa87e4f,
+		0xfe2ce6e0,
+		0xa3014314,
+		0x4e0811a1,
+		0xf7537e82,
+		0xbd3af235,
+		0x2ad7d2bb,
+		0xeb86d391
 	};
 
 	uint32_t S[] = {
@@ -211,7 +191,6 @@ char * md5(char *message) {
 		21
 	};
 
-	// todo debug and fix
 	for (size_t offset = 0; offset < elements; offset += 16) {
 		uint32_t A = A0;
 		uint32_t B = B0;
@@ -255,7 +234,10 @@ char * md5(char *message) {
 			B = B + RotateLeft(sum, S[i]);
 			A = temp;
 
-			printf("%08x %08x %08x %08x\n", A, B, C, D);
+			printf(
+				"A=%08x B=%08x C=%08x D=%08x sum=%08x\n",
+				A, B, C, D, sum
+			);
 		}
 
 		A0 += A;
@@ -269,6 +251,11 @@ char * md5(char *message) {
 		free(buffer);
 		return NULL;
 	}
+
+	printf(
+		"A0=%08x B0=%08x C0=%08x D0=%08x\n",
+		A0, B0, C0, D0
+	);
 
 	uint32_t stages[4] = {A0, B0, C0, D0};
 	int p = 0;
