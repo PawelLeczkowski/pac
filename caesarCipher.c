@@ -9,23 +9,29 @@
 
 #include "../pel/integer.h"
 
-// todo cleanup
-
-char rotateRight(char c, int n, size_t alpabetSize) {
+char rotateRight(int c, int n, int alpabetSize) {
 	c -= 'a';
 	c = (c + n) % alpabetSize;
 	c += 'a';
-	return c;
+	return (char)c;
 }
 
-char rotateLeft(char c, int n, size_t alpabetSize) {
-	c -= 'a';
+char rotateLeft(int c, int n, int alpabetSize) {
+	char a;
+	if (islower(c)) {
+		a = 'a';
+	}
+	else {
+		a = 'A';
+	}
+
+	c -= a;
 	c -= n;
 	if (c < 0) {
 		c += alpabetSize;
 	}
-	c += 'a';
-	return c;
+	c += a;
+	return (char)c;
 }
 
 FILE* openFileForRead(char *path) {
@@ -61,9 +67,7 @@ int cesarCypherEncrypt(char *pathIn, char *pathOut, int key) {
 
 	char c = 0;
 	while ((c = (char)fgetc(fIn)) != EOF) {
-
 		if (isalpha(c)) {
-			c = (char)tolower(c);
 			c = rotateRight(c, key, 26);
 		}
 
@@ -97,9 +101,9 @@ int cesarCypherDecrypt(char *pathIn, char *pathOut, int key) {
 
 	char c = 0;
 	while ((c = (char)fgetc(fIn)) != EOF) {
-
-		if (isalpha(c))
+		if (isalpha(c)) {
 			c = rotateLeft(c, key, 26);
+		}
 
 		fputc(c, fOut);
 	}
@@ -122,6 +126,10 @@ int bestIndex(const long long* occurances) {
 
 char* setLetters(long long* occurances, const char best[26]) {
 	char* letters = malloc(26 * sizeof(char));
+
+	if (letters == NULL) {
+		return NULL;
+	}
 
 	for (int i = 0; i < 26; i++) {
 		const int index = bestIndex(occurances);
@@ -164,14 +172,18 @@ int analyzeFrequency(char *pathIn, char *pathOut, const char dictionary[26]) {
 	}
 
 	char* letters = setLetters(occurances, dictionary);
+	if (letters == NULL) {
+		return -2;
+	}
 
 	f = openFileForRead(pathIn);
 
 	FILE* fo = openFileForWrite(pathOut);
 	if (fo == NULL) {
 		free(letters);
-		return -2;
+		return -3;
 	}
+
 	putLetters(f, fo, letters);
 
 	free(letters);
