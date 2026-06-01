@@ -5,6 +5,6 @@
 #ifndef PPC_MD5_H
 #define PPC_MD5_H
 
-char* md5(char* message);
+char* md5(const char* message);
 
 #endif //PPC_MD5_H
