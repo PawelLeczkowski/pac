@@ -47,11 +47,7 @@ char * md5(char *message) {
 	((uint8_t*)buffer)[length] = 0x80;
 	bitLength = length * 8;
 
-	memcpy(
-		(uint8_t*)buffer + (elements * sizeof(uint32_t)) - 8,
-		&bitLength,
-		8
-	);
+	memcpy((uint8_t*)buffer + elements * sizeof(uint32_t) - 8, &bitLength,8);
 	uint32_t A0 = 0x67452301;
 	uint32_t B0 = 0xefcdab89;
 	uint32_t C0 = 0x98badcfe;
@@ -199,10 +195,6 @@ char * md5(char *message) {
 
 		uint32_t *M = buffer + offset;
 
-		for (int i = 0; i < 16; i++) {
-			printf("M[%d] = %08x\n", i, M[i]);
-		}
-
 		for (int i = 0; i < 64; i++) {
 			uint32_t F_value, g;
 
@@ -220,11 +212,6 @@ char * md5(char *message) {
 				g = (7 * i) % 16;
 			}
 
-			printf(
-				"A=%08x B=%08x C=%08x D=%08x F=%08x M=%08x\n",
-				A,B,C,D,F_value,M[g]
-			);
-
 			uint32_t temp = D;
 
 			uint32_t sum = A + F_value + K[i] + M[g];
@@ -233,11 +220,6 @@ char * md5(char *message) {
 			C = B;
 			B = B + RotateLeft(sum, S[i]);
 			A = temp;
-
-			printf(
-				"A=%08x B=%08x C=%08x D=%08x sum=%08x\n",
-				A, B, C, D, sum
-			);
 		}
 
 		A0 += A;
@@ -251,11 +233,6 @@ char * md5(char *message) {
 		free(buffer);
 		return NULL;
 	}
-
-	printf(
-		"A0=%08x B0=%08x C0=%08x D0=%08x\n",
-		A0, B0, C0, D0
-	);
 
 	uint32_t stages[4] = {A0, B0, C0, D0};
 	int p = 0;
