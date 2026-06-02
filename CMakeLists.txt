@@ -3,6 +3,7 @@ add_library(pac
         queue.c
         caesarCipher.c
         md5.c
+        graphUtils.c
 )
 
 target_include_directories(pac
