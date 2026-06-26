@@ -11,13 +11,13 @@ struct Graph * CreateGraphFromFile(char *path) {
 	//todo implement
 }
 
-struct Graph* CreateGraphFromMatrix(double **matrix, size_t size) {
+struct Graph* CreateGraphFromMatrix(size_t size, double matrix[][size]) {
 	struct Graph* graph = malloc(sizeof(struct Graph));
 	if (graph == NULL) {
 		return NULL;
 	}
 
-	graph->vertices = malloc(sizeof(struct Vertex*) * size);
+	graph->vertices = calloc(size, sizeof(struct Vertex));
 	if (graph->vertices == NULL) {
 		free(graph);
 		return NULL;
@@ -28,13 +28,13 @@ struct Graph* CreateGraphFromMatrix(double **matrix, size_t size) {
 	size_t edges = 0;
 	for (int i=0; i<size; i++) {
 		for (int j=0; j<size; j++) {
-			if (matrix[i][j] != NAN) {
+			if (!isnan(matrix[i][j])) {
 				edges++;
 			}
 		}
 	}
 
-	graph->edges = malloc(sizeof(struct Edge*) * edges);
+	graph->edges = malloc(sizeof(struct Edge) * edges);
 	if (graph->edges == NULL) {
 		free(graph->vertices);
 		free(graph);
@@ -46,7 +46,7 @@ struct Graph* CreateGraphFromMatrix(double **matrix, size_t size) {
 	int edge = 0;
 	for (int i=0; i<size; i++) {
 		for (int j=0; j<size; j++) {
-			if (matrix[i][j] != NAN) {
+			if (!isnan(matrix[i][j])) {
 				graph->edges[edge].source = &graph->vertices[i];
 				graph->edges[edge].destination = &graph->vertices[j];
 				graph->edges[edge].weight = matrix[i][j];
@@ -74,11 +74,9 @@ struct Graph* CreateGraphFromMatrix(double **matrix, size_t size) {
 		}
 
 		// searching for all edges whose source is ith vertex
-		size_t index = 0;
 		for (int j = 0; j < graph->edgeCount; j++) {
-			if (vertex->id == graph->edges[j].source->id) {
-				vertex->edges = &graph->edges[j];
-				index++;
+			if (vertex == graph->edges[j].source) {
+				vertex->edges[j] = &graph->edges[j];
 			}
 		}
 	}

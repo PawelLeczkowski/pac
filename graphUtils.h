@@ -12,7 +12,7 @@
 
 struct Graph* CreateGraphFromFile(char* path);
 
-struct Graph* CreateGraphFromMatrix(double** matrix, size_t size);
+struct Graph* CreateGraphFromMatrix(size_t size, double matrix[][size]);
 
 char* CreateMatrixFromGraph(struct Graph* graph);
 

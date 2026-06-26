@@ -14,7 +14,7 @@ struct Edge {
 struct Vertex {
 	int id;
 	void* value;
-	struct Edge* edges;
+	struct Edge** edges;
 	size_t degree;
 };
 
