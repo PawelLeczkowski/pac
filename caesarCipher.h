@@ -6,22 +6,24 @@
 #define PPC_CAESARCIPHER_H
 
 /**
- * todo docs
  * Classical cesar cypher encryption implementation.
  *
  * Warning! Works only with english alphabet.
  *
- * @param pathIn
- * @param pathOut
- * @param key
+ * @param pathIn path to input file
+ * @param pathOut path to encrypted output file
+ * @param key shift number
  */
 int cesarCypherEncrypt(char *pathIn, char *pathOut, int key);
 
 /**
- * todo docs
  * Classical cesar cypher decryption implementation.
  *
  * Warning! Works only with english alphabet.
+ *
+ * @param pathIn path to encrypted input file
+ * @param pathOut path to decrypted output file
+ * @param key shift number
  */
 int cesarCypherDecrypt(char *pathIn, char *pathOut, int key);
 
