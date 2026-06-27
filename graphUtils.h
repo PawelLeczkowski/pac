@@ -12,8 +12,8 @@
 
 struct Graph* CreateGraphFromFile(char* path);
 
-struct Graph* CreateGraphFromMatrix(size_t size, double matrix[][size]);
+struct Graph* CreateGraphFromMatrix(size_t size, double* matrix);
 
-char* CreateMatrixFromGraph(struct Graph* graph);
+int SaveGraphToFile(struct Graph* graph, char* path);
 
 #endif //PPC_GRAPHUTILS_H

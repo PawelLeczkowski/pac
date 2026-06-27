@@ -5,13 +5,48 @@
 #include "graphUtils.h"
 
 #include <math.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 struct Graph * CreateGraphFromFile(char *path) {
-	//todo implement
+	if (path == NULL) {
+		return NULL;
+	}
+
+	FILE * file = fopen(path, "r");
+	if (file == NULL) {
+		return NULL;
+	}
+
+	size_t size = 0;
+	fscanf(file, "%llu", &size);
+
+	double* matrix = calloc(size * size, sizeof(double*));
+
+	for (int i=0; i<size; i++) {
+		for (int j=0; j<size; j++) {
+			int c = getc(file);
+			ungetc(c, file);
+			if (c == 'N') {
+				getc(file);
+				getc(file);
+				matrix[i * size + j] = NAN;
+			}
+			else {
+				fscanf(file, "%lf", &matrix[i * size + j]);
+			}
+		}
+	}
+
+	struct Graph* graph = CreateGraphFromMatrix(size, matrix);
+
+	free(matrix);
+	fclose(file);
+
+	return graph;
 }
 
-struct Graph* CreateGraphFromMatrix(size_t size, double matrix[][size]) {
+struct Graph* CreateGraphFromMatrix(size_t size, double* matrix) {
 	struct Graph* graph = malloc(sizeof(struct Graph));
 	if (graph == NULL) {
 		return NULL;
@@ -28,7 +63,7 @@ struct Graph* CreateGraphFromMatrix(size_t size, double matrix[][size]) {
 	size_t edges = 0;
 	for (int i=0; i<size; i++) {
 		for (int j=0; j<size; j++) {
-			if (!isnan(matrix[i][j])) {
+			if (!isnan(matrix[i * size + j])) {
 				edges++;
 			}
 		}
@@ -46,10 +81,10 @@ struct Graph* CreateGraphFromMatrix(size_t size, double matrix[][size]) {
 	int edge = 0;
 	for (int i=0; i<size; i++) {
 		for (int j=0; j<size; j++) {
-			if (!isnan(matrix[i][j])) {
+			if (!isnan(matrix[i * size + j])) {
 				graph->edges[edge].source = &graph->vertices[i];
 				graph->edges[edge].destination = &graph->vertices[j];
-				graph->edges[edge].weight = matrix[i][j];
+				graph->edges[edge].weight = matrix[i * size + j];
 				edge++;
 
 				graph->vertices[i].degree++;
@@ -74,9 +109,11 @@ struct Graph* CreateGraphFromMatrix(size_t size, double matrix[][size]) {
 		}
 
 		// searching for all edges whose source is ith vertex
+		int index = 0;
 		for (int j = 0; j < graph->edgeCount; j++) {
 			if (vertex == graph->edges[j].source) {
-				vertex->edges[j] = &graph->edges[j];
+				vertex->edges[index] = &graph->edges[j];
+				index++;
 			}
 		}
 	}
@@ -84,6 +121,35 @@ struct Graph* CreateGraphFromMatrix(size_t size, double matrix[][size]) {
 	return graph;
 }
 
-char * CreateMatrixFromGraph(struct Graph *graph) {
-	//todo implement
+int SaveGraphToFile(struct Graph *graph, char* path) {
+	if (graph == NULL) {
+		return -1;
+	}
+
+	FILE * file = fopen(path, "w");
+	if (file == NULL) {
+		return -2;
+	}
+
+	fprintf(file, "%llu\n", graph->vertexCount);
+
+	for (int i = 0; i < graph->vertexCount; ++i) {
+		struct Vertex *vertex = &graph->vertices[i];
+
+		int index = 0;
+		for (int j = 0; j < graph->vertexCount; ++j) {
+			if (index <= vertex->degree && vertex->edges[index]->destination->id == j) {
+				fprintf(file,"%.10g ", vertex->edges[index]->weight);
+				index++;
+			}
+			else {
+				fprintf(file,"NaN ");
+			}
+		}
+		fprintf(file, "\n");
+	}
+
+	fclose(file);
+
+	return 0;
 }
